@@ -4,7 +4,7 @@ from threading import Thread
 
 from _thread import *
 
-debug = True
+debug = False
 
 connected = False
 
@@ -36,6 +36,14 @@ def listeningThread() :
 
     listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listening_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    
+    try :
+        listening_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    except AttributeError : 
+        pass
+        
+
     listening_socket.bind(('', loc_port))
     
     listening_socket.listen(1)
@@ -62,6 +70,13 @@ def connectionThread(dest_host, dest_port) :
 
     connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     connection_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    try :
+        connection_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    except AttributeError : 
+        pass
+        
+
     connection_socket.bind(('', loc_port))
     
     while not connected:
@@ -136,6 +151,12 @@ def connectToServer(host, port) :
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    try :
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    except AttributeError : 
+        pass
+
     server_socket.bind(('', loc_port))
     print ('Bound {} port'.format(loc_port))
     server_socket.connect((host, port))
