@@ -22,7 +22,7 @@ def myreceive():
 
 
 
-print 'a'
+print('a')
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -30,11 +30,10 @@ s.bind(('', 55000))
 s.listen(2)
 
 #print stun.get_ip_info(source_port=8887)
-print 'Serving HTTP on port %s ...' % 55000
 while True:
     client_connection, client_address = s.accept()
     request = client_connection.recv(1024)
-    print request, client_connection, client_address
+    print ((request, client_connection, client_address))
 
     http_response = """\
 HTTP/1.1 200 OK

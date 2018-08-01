@@ -1,16 +1,38 @@
 import threading, socket, random, struct
 
+from threading import Thread
+
 from _thread import *
 
 debug = True
 
 connected = False
 
+mainSocket = 0
+
 loc_port = random.randint(50000, 50100)
+
+class ReplyHandler(Thread):
+
+    
+    def __init__(self):
+        Thread.__init__(self)
+    def run(self):
+        global connected
+        while True:
+            try : 
+                mes = mainSocket.recv(1024)
+            except ConnectionResetError :
+                print ('Other peer has closed the connection')
+                connected = False
+                break
+            else :
+                print (mes)
+
 
 def listeningThread() :
 
-    global connected
+    global connected, mainSocket
 
     listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listening_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -27,12 +49,16 @@ def listeningThread() :
         else:
             print('heard')
             connected = True
+            mainSocket = connection
             break        
-    connection.close()
+    
+    listening_socket.close()
+
+    #print ('connected but not heard')
 
 def connectionThread(dest_host, dest_port) :
 
-    global connected
+    global connected, mainSocket
 
     connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     connection_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -49,11 +75,19 @@ def connectionThread(dest_host, dest_port) :
         else:
             print('connected')
             connected = True
+            mainSocket = connection_socket
             break        
-    connection_socket.close()
+
+    #start_new_thread(messageListeningThread, connection_socket)
+    
+    #connection_socket.send(bytes('simple', 'utf-8'))
+
+    #connection_socket.close()
 
 def connectToPeer(connect_data) :
     
+    global connected
+
     bytes_host = connect_data[:4]
     bytes_port = connect_data[4:]
 
@@ -65,6 +99,36 @@ def connectToPeer(connect_data) :
 
     start_new_thread(listeningThread, ())
     start_new_thread(connectionThread, (dest_host, dest_port))
+
+    while not connected :
+        continue
+
+   
+
+    thread = ReplyHandler()
+    thread.daemon = True
+    thread.start()
+  
+    line = ''
+
+    while line != 'close' and connected:
+        
+        line = input()
+        try : 
+            mainSocket.send(bytes(line, 'utf-8'))
+        except ConnectionResetError :
+            print ('Other peer has closed the connection')
+            connected = False
+            break
+        
+
+    try :
+         mainSocket.close()
+    except KeyError :
+        pass
+
+    print ('Connection closed')
+
 
 def connectToServer(host, port) :
 
@@ -118,14 +182,9 @@ def connectToServer(host, port) :
             except KeyError :
                 pass
 
-            connectToPeer(ans[1:]) 
             return ans[1:]
         elif ans[0] == 3 :
             print('This id is not registered')
 
     server_socket.close()
-
-print (connectToServer('188.243.49.147', 8887))
-
-while True:
-    pass
+connectToPeer(connectToServer('188.243.49.147', 8887)) 

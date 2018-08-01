@@ -25,7 +25,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind(('', 55000))
 
-s.connect(('tulumbas.com', 80))
+s.connect(('109.239.139.43', 45693))
 
 req = """GET /default.aspx HTTP/1.1 \
 Host: tulumbas.com:80"""
