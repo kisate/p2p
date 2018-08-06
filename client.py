@@ -103,12 +103,11 @@ def connectToPeer(connect_data) :
     
     global connected
 
-    bytes_host = connect_data[:4]
-    bytes_port = connect_data[4:]
+    parts = connect_data.split(':')
 
-    dest_host = "{}.{}.{}.{}".format(*struct.unpack('BBBB', bytes_host))
+    dest_host = parts[0]
     
-    dest_port = int.from_bytes(bytes_port, byteorder='big')
+    dest_port = int(parts[1])
 
     print ('Connecting to {}:{}'.format(dest_host, dest_port))
 
@@ -161,13 +160,13 @@ def connectToServer(host, port) :
     print ('Bound {} port'.format(loc_port))
     server_socket.connect((host, port))
 
-    server_socket.sendall(b'\x01\x00\x00\x00\x00')
+    server_socket.send(bytes('1', 'utf-8'))
 
     ans = server_socket.recv(4096)
 
     print (ans)
 
-    print (int.from_bytes(ans[1:], byteorder = 'big'))
+    print (int(ans[1:]))
 
     while True:
 
@@ -183,7 +182,7 @@ def connectToServer(host, port) :
             continue
         
         if inp == -1 :
-            server_socket.sendall(b'\x03' + bytes([2]))
+            server_socket.sendall(bytes('32', 'utf-8'))
 
             try :
                 server_socket.close()
@@ -191,21 +190,24 @@ def connectToServer(host, port) :
                 pass
             break
 
-        server_socket.sendall(b'\x02' + inp.to_bytes(2, byteorder='big'))
+        server_socket.sendall(bytes('2{}'.format(inp), 'utf-8'))
         
         ans = server_socket.recv(4096)
 
-        if ans[0] == 2 :
-            server_socket.sendall(b'\x03' + bytes([2]))
+        ans_str = ans.decode('utf-8')
 
+    
+        if int(ans_str[0]) == 2 :
+            server_socket.sendall(bytes('32', 'utf-8'))
+            print('got it')
             try :
                 server_socket.close()
             except KeyError :
                 pass
 
-            return ans[1:]
-        elif ans[0] == 3 :
+            return ans_str[1:]
+        elif int(ans_str[1]) == 3 :
             print('This id is not registered')
 
     server_socket.close()
-connectToPeer(connectToServer('188.243.49.147', 8887)) 
+connectToPeer(connectToServer('31.31.196.78', 11009)) 

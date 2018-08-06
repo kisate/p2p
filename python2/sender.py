@@ -1,6 +1,8 @@
 import socket
 import re
 
+
+
 def mysend(msg, s):
         totalsent = 0
         while totalsent < len(msg):
@@ -25,21 +27,21 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind(('', 54000))
 
-s.connect(('31.31.196.78', 11006))
+s.connect(('31.31.196.78', 11003))
 
 req = """GET /default.aspx HTTP/1.1 \
 Host: tulumbas.com:80"""
 
-b = bytes('16532', 'utf-8')
+b = b'1'
 
-print(b)
+print b
 
 s.send(b)
 
-print ("smth")
+print "smth"
 
 ans = s.recv(4096)
 
-print (ans)
+print ans
 
 inp = input()
